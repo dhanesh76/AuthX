@@ -4,9 +4,10 @@ import org.springframework.http.HttpStatus;
 
 public interface ErrorCode {
     HttpStatus getStatus();
+
     String defaultMessage();
 
-    default String getCode(){
-        return ((Enum<?>)this).name();
+    default String getCode() {
+        return ((Enum<?>) this).name();
     }
 }

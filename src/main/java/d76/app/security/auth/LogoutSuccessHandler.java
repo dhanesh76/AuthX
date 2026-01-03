@@ -24,10 +24,10 @@ public class LogoutSuccessHandler implements org.springframework.security.web.au
         response.setContentType("application/json");
 
         response.getWriter().write("""
-            {
-              "status": "LOGOUT_SUCCESS",
-              "message": "Session ended and cookie cleared"
-            }
-        """);
+                    {
+                      "status": "LOGOUT_SUCCESS",
+                      "message": "Session ended and cookie cleared"
+                    }
+                """);
     }
 }

@@ -34,7 +34,7 @@ public final class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .timestamp(Instant.now())
                 .build();
-        return ResponseEntity.status((HttpStatus) errorCode.getStatus()).body(response);
+        return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -65,7 +65,7 @@ public final class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    ResponseEntity<ApiErrorResponse> handleException(Exception ex, HttpServletRequest request) {
+    ResponseEntity<ApiErrorResponse> handleException(HttpServletRequest request) {
 
         ApiErrorResponse response = ApiErrorResponse
                 .builder()

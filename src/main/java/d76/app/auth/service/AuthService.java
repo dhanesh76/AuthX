@@ -9,7 +9,6 @@ import d76.app.core.notification.otp.model.OtpPurpose;
 import d76.app.core.notification.otp.service.OtpService;
 import d76.app.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final OtpService otpService;
     private final MailService mailService;

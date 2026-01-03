@@ -11,5 +11,6 @@ public record LoginSuccess(
         String accessToken,
         String authProvider,
         Instant issuedAt
-) {}
+) {
+}
 

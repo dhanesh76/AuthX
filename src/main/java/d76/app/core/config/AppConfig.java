@@ -10,15 +10,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class AppConfig {
 
     @Bean
-    ObjectMapper objectMapper(){
-        var mapper =  new ObjectMapper();
+    ObjectMapper objectMapper() {
+        var mapper = new ObjectMapper();
 
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
 
     @Bean
-    WebClient webClient(){
+    WebClient webClient() {
         return WebClient.builder().build();
     }
 

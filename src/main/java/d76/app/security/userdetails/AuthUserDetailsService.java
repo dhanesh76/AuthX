@@ -21,7 +21,7 @@ public class AuthUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
         Users user = usersRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(()-> new BusinessException(UserErrorCode.USER_NOT_FOUND, "No user exists with: " + usernameOrEmail));
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, "No user exists with: " + usernameOrEmail));
 
         return new UserPrincipal(user);
     }

@@ -132,7 +132,7 @@ public class JwtService {
                 .builder()
                 .id(UUID.randomUUID().toString())
                 .subject(email)
-                .claim("purpose", JwtPurpose.REAUTH.name())
+                .claim("purpose", jwtPurpose.name())
                 .issuedAt(new Date())
                 .expiration(Date.from(Instant.now().plusSeconds(reAuthTokenTTLSeconds))) // 3 mins
                 .signWith(getKey(), Jwts.SIG.HS256)
