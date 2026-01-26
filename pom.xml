@@ -13,9 +13,9 @@
     </parent>
 
     <groupId>d76</groupId>
-    <artifactId>app</artifactId>
+    <artifactId>AuthX</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>security</name>
+    <name>AuthX</name>
     <description>spring-security-module</description>
 
     <properties>

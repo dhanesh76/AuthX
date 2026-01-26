@@ -6,13 +6,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Collections;
+
 @Configuration
 public class AppConfig {
 
     @Bean
     ObjectMapper objectMapper() {
         var mapper = new ObjectMapper();
-
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
