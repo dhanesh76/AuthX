@@ -147,13 +147,6 @@ async function handleVerifyOtp(event) {
             // Show success message and redirect to login
             alert('Email verified successfully! Please login.');
             showPage('login-page');
-            
-            // Pre-fill email in login form
-            const loginEmail = data.email;
-            if (loginEmail) {
-                // Note: Login uses username, so we'll clear the form
-                document.getElementById('login-form').reset();
-            }
         } else {
             const errorData = await response.json();
             showError('otp-error', errorData.message || 'Invalid OTP. Please try again.');
@@ -186,7 +179,13 @@ async function handleResendOtp() {
         });
 
         if (response.ok) {
-            showSuccess('otp-error', 'OTP resent successfully! Check your email.');
+            // Clear any existing errors and show success in the same element
+            const otpErrorElement = document.getElementById('otp-error');
+            if (otpErrorElement) {
+                otpErrorElement.textContent = 'OTP resent successfully! Check your email.';
+                otpErrorElement.classList.remove('alert-error', 'hidden');
+                otpErrorElement.classList.add('alert-success');
+            }
         } else {
             const errorData = await response.json();
             showError('otp-error', errorData.message || 'Failed to resend OTP.');
@@ -282,6 +281,7 @@ async function handleLogout() {
         // Still clear local state on error
         state.user = null;
         state.token = null;
+        state.email = null;
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
         showPage('landing-page');
