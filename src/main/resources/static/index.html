@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthX - Authentication System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar hidden">
+        <div class="nav-container">
+            <div class="nav-brand">AuthX</div>
+            <div class="nav-links">
+                <span id="user-display"></span>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div id="app" class="container">
+        <!-- Landing Page -->
+        <div id="landing-page" class="page active">
+            <div class="hero">
+                <h1 class="hero-title">Welcome to AuthX</h1>
+                <p class="hero-subtitle">Secure authentication system with OTP verification</p>
+                <div class="hero-actions">
+                    <button onclick="showPage('login-page')" class="btn btn-primary">Login</button>
+                    <button onclick="showPage('register-page')" class="btn btn-outline">Register</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="register-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Create Account</h2>
+                <form id="register-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" name="username" required 
+                               placeholder="Enter username" class="form-control">
+                        <small class="form-text">Choose a unique username</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" name="email" required 
+                               placeholder="Enter email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Password</label>
+                        <input type="password" id="reg-password" name="password" required 
+                               minlength="8" placeholder="Enter password (min 8 characters)" class="form-control">
+                        <small class="form-text">Password must be at least 8 characters</small>
+                    </div>
+                    <div id="register-error" class="alert alert-error hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </form>
+                <div class="card-footer">
+                    Already have an account? <a href="#" onclick="showPage('login-page')">Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTP Verification Page -->
+        <div id="otp-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Verify OTP</h2>
+                <p class="card-subtitle">We've sent a verification code to <strong id="otp-email-display"></strong></p>
+                <form id="otp-form" onsubmit="handleVerifyOtp(event)">
+                    <div class="form-group">
+                        <label for="otp-code">Enter OTP</label>
+                        <input type="text" id="otp-code" name="otp" required 
+                               minlength="5" maxlength="7" placeholder="Enter OTP code" 
+                               class="form-control otp-input">
+                        <small class="form-text">Check your email for the verification code</small>
+                    </div>
+                    <div id="otp-error" class="alert alert-error hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Verify OTP</button>
+                </form>
+                <div class="card-footer">
+                    <button onclick="handleResendOtp()" class="btn btn-link">Resend OTP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Login</h2>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" required 
+                               placeholder="Enter username" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required 
+                               placeholder="Enter password" class="form-control">
+                    </div>
+                    <div id="login-error" class="alert alert-error hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+                <div class="card-footer">
+                    <a href="#" onclick="showPage('forgot-password-page')">Forgot Password?</a>
+                    <span class="separator">|</span>
+                    <a href="#" onclick="showPage('register-page')">Create Account</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Forgot Password Page -->
+        <div id="forgot-password-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Forgot Password</h2>
+                <p class="card-subtitle">Enter your email to receive a password reset code</p>
+                <form id="forgot-password-form" onsubmit="handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label for="forgot-email">Email</label>
+                        <input type="email" id="forgot-email" name="email" required 
+                               placeholder="Enter your email" class="form-control">
+                    </div>
+                    <div id="forgot-error" class="alert alert-error hidden"></div>
+                    <div id="forgot-success" class="alert alert-success hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Reset Code</button>
+                </form>
+                <div class="card-footer">
+                    <a href="#" onclick="showPage('login-page')">Back to Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reset Password Page -->
+        <div id="reset-password-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Reset Password</h2>
+                <p class="card-subtitle">Enter the OTP sent to your email and your new password</p>
+                <form id="reset-password-form" onsubmit="handleResetPassword(event)">
+                    <div class="form-group">
+                        <label for="reset-email">Email</label>
+                        <input type="email" id="reset-email" name="email" required 
+                               placeholder="Enter your email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-otp">OTP Code</label>
+                        <input type="text" id="reset-otp" name="otp" required 
+                               minlength="5" maxlength="7" placeholder="Enter OTP" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-new-password">New Password</label>
+                        <input type="password" id="reset-new-password" name="newPassword" required 
+                               minlength="8" placeholder="Enter new password" class="form-control">
+                        <small class="form-text">Password must be at least 8 characters</small>
+                    </div>
+                    <div id="reset-error" class="alert alert-error hidden"></div>
+                    <div id="reset-success" class="alert alert-success hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Reset Password</button>
+                </form>
+                <div class="card-footer">
+                    <a href="#" onclick="showPage('login-page')">Back to Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <div class="dashboard">
+                <h2 class="dashboard-title">Dashboard</h2>
+                <div class="dashboard-content">
+                    <div class="info-card">
+                        <h3>Welcome!</h3>
+                        <p>You are successfully logged in to AuthX.</p>
+                        <div class="user-info">
+                            <p><strong>Username:</strong> <span id="dashboard-username"></span></p>
+                            <p><strong>Email:</strong> <span id="dashboard-email"></span></p>
+                            <p><strong>Provider:</strong> <span id="dashboard-provider"></span></p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3>Account Actions</h3>
+                        <button onclick="showPage('change-password-page')" class="btn btn-primary">Change Password</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Password Page -->
+        <div id="change-password-page" class="page">
+            <div class="card">
+                <h2 class="card-title">Change Password</h2>
+                <form id="change-password-form" onsubmit="handleChangePassword(event)">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" name="currentPassword" required 
+                               placeholder="Enter current password" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" name="newPassword" required 
+                               minlength="8" placeholder="Enter new password" class="form-control">
+                    </div>
+                    <div id="change-password-error" class="alert alert-error hidden"></div>
+                    <div id="change-password-success" class="alert alert-success hidden"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Change Password</button>
+                </form>
+                <div class="card-footer">
+                    <a href="#" onclick="showPage('dashboard-page')">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
