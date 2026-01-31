@@ -42,7 +42,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
                 meta = objectMapper.readValue(desc, new TypeReference<>() {
                 });
 
-            String authProvider = meta.get("authProvider");
+            String authProvider = meta.get("identityProvider");
             String email = meta.get("email");
 
             switch (oaeError.getErrorCode()) {
@@ -52,15 +52,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
                     res.setStatus(statusValue);
                     res.setContentType("application/json");
 
-                    ApiErrorResponse response = ApiErrorResponse
-                            .builder()
-                            .errorCode(AuthErrorCode.EMAIL_REQUIRED.name())
-                            .statusCode(statusValue)
-                            .message(ex.getMessage())
-                            .timestamp(Instant.now())
-                            .path(request.getRequestURI())
-                            .authProvider(authProvider)
-                            .build();
+                    ApiErrorResponse response = ApiErrorResponse.builder().errorCode(AuthErrorCode.EMAIL_REQUIRED.name()).statusCode(statusValue).message(ex.getMessage()).timestamp(Instant.now()).path(request.getRequestURI()).authProvider(authProvider).build();
 
                     res.getWriter().write(objectMapper.writeValueAsString(response));
                     return;
@@ -74,16 +66,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
                     res.setStatus(statusValue);
                     res.setContentType("application/json");
 
-                    ApiErrorResponse response = ApiErrorResponse
-                            .builder()
-                            .errorCode(UserErrorCode.USER_NOT_FOUND.name())
-                            .statusCode(statusValue)
-                            .message(ex.getMessage())
-                            .timestamp(Instant.now())
-                            .path(request.getRequestURI())
-                            .authProvider(authProvider)
-                            .actionToken(actionToken)
-                            .build();
+                    ApiErrorResponse response = ApiErrorResponse.builder().errorCode(UserErrorCode.USER_NOT_FOUND.name()).statusCode(statusValue).message(ex.getMessage()).timestamp(Instant.now()).path(request.getRequestURI()).authProvider(authProvider).actionToken(actionToken).build();
                     res.getWriter().write(objectMapper.writeValueAsString(response));
                     return;
                 }
@@ -95,16 +78,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
                     res.setStatus(statusValue);
                     res.setContentType("application/json");
 
-                    ApiErrorResponse response = ApiErrorResponse
-                            .builder()
-                            .errorCode(AuthErrorCode.AUTH_PROVIDER_NOT_LINKED.name())
-                            .statusCode(statusValue)
-                            .message(meta.get("message"))
-                            .timestamp(Instant.now())
-                            .path(request.getRequestURI())
-                            .authProvider(authProvider)
-                            .actionToken(actionToken)
-                            .build();
+                    ApiErrorResponse response = ApiErrorResponse.builder().errorCode(AuthErrorCode.AUTH_PROVIDER_NOT_LINKED.name()).statusCode(statusValue).message(meta.get("message")).timestamp(Instant.now()).path(request.getRequestURI()).authProvider(authProvider).actionToken(actionToken).build();
 
                     res.getWriter().write(objectMapper.writeValueAsString(response));
                     return;
@@ -113,14 +87,7 @@ public class LoginFailureHandler implements AuthenticationFailureHandler {
         }
 
         var errorCode = AuthErrorCode.INVALID_CREDENTIALS;
-        ApiErrorResponse errorResponse = ApiErrorResponse.builder()
-                .statusCode(errorCode.getStatus().value())
-                .errorCode(errorCode.getCode())
-                .message(errorCode.defaultMessage())
-                .path(request.getRequestURI())
-                .timestamp(Instant.now())
-                .authProvider("EMAIL")
-                .build();
+        ApiErrorResponse errorResponse = ApiErrorResponse.builder().statusCode(errorCode.getStatus().value()).errorCode(errorCode.getCode()).message(errorCode.defaultMessage()).path(request.getRequestURI()).timestamp(Instant.now()).authProvider("EMAIL").build();
 
         res.setStatus(errorCode.getStatus().value());
         res.setContentType("application/json");

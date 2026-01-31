@@ -1,7 +1,7 @@
 package d76.app.user.service;
 
 import d76.app.auth.exception.AuthErrorCode;
-import d76.app.auth.model.AuthProvider;
+import d76.app.auth.model.IdentityProvider;
 import d76.app.core.exception.BusinessException;
 import d76.app.security.jwt.JwtService;
 import d76.app.security.jwt.model.JwtPurpose;
@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -42,13 +43,13 @@ public class UserService {
         Role role = loadDefaultRole();
         Set<Role> roles = new HashSet<>(Set.of(role));
 
-        Set<AuthProvider> authProviders = new HashSet<>(Set.of(AuthProvider.EMAIL));
+        Set<IdentityProvider> identityProviders = new HashSet<>(Set.of(IdentityProvider.EMAIL));
 
         Users user = Users.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .authProviders(authProviders)
+                .identityProviders(identityProviders)
                 .roles(roles)
                 .build();
 
@@ -56,7 +57,7 @@ public class UserService {
     }
 
     @Transactional
-    public Users createOAuthUser(String email, String username, AuthProvider authProvider) {
+    public Users createOAuthUser(String email, String username, IdentityProvider identityProvider) {
 
         assertUsernameAvailable(username);
         assertEmailAvailable(email);
@@ -64,13 +65,13 @@ public class UserService {
         Role role = loadDefaultRole();
         Set<Role> roles = new HashSet<>(Set.of(role));
 
-        Set<AuthProvider> authProviders = new HashSet<>(Set.of(authProvider));
+        Set<IdentityProvider> identityProviders = new HashSet<>(Set.of(identityProvider));
 
         Users user = Users
                 .builder()
                 .username(username)
                 .email(email)
-                .authProviders(authProviders)
+                .identityProviders(identityProviders)
                 .roles(roles)
                 .build();
 
@@ -84,16 +85,16 @@ public class UserService {
 
         var claims = jwtService.extractClaims(actionToken);
         var email = claims.getSubject();
-        var provider = AuthProvider.fromClient(claims.get("authProvider", String.class));
+        var provider = IdentityProvider.fromClient(claims.get("identityProvider", String.class));
 
         Users user = loadUserByEmail(email);
 
-        if (user.getAuthProviders().contains(provider)) {
+        if (user.getIdentityProviders().contains(provider)) {
             throw new BusinessException(UserErrorCode.AUTH_PROVIDER_ALREADY_LINKED,
-                    "AuthProvider " + provider.name() + " already linked with the account");
+                    "IdentityProvider " + provider.name() + " already linked with the account");
         }
 
-        user.getAuthProviders().add(provider);
+        user.getIdentityProviders().add(provider);
         usersRepository.save(user);
     }
 
@@ -109,6 +110,7 @@ public class UserService {
         usersRepository.save(user);
     }
 
+    @Transactional
     public void updatePassword(String email, ChangePasswordRequest request) {
         jwtService.assertReAuthTokenValid(email, request.reauthenticateToken(), JwtPurpose.REAUTH);
 
@@ -158,5 +160,14 @@ public class UserService {
         return usersRepository.findByEmail(email).orElseThrow(
                 () -> new BusinessException(UserErrorCode.USER_NOT_FOUND, "No user exists with the email: " + email)
         );
+    }
+
+    public Optional<Users> findUserByEmail(String email) {
+        return usersRepository.findByEmail(email);
+    }
+
+    public Users loadUserByEmailOrUsername(String usernameOrEmail) {
+        return usersRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, "No user exists with: " + usernameOrEmail));
     }
 }

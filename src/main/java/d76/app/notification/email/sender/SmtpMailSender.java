@@ -26,11 +26,15 @@ public class SmtpMailSender implements MailSender {
             sendText(message);
 
         else if (contentType.equals(MailContentType.HTML)) {
-
+            try {
+                sendHtml(message);
+            } catch (MessagingException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    private void sendText(MailMessage message){
+    private void sendText(MailMessage message) {
         SimpleMailMessage mail = new SimpleMailMessage();
 
         mail.setTo(message.to());

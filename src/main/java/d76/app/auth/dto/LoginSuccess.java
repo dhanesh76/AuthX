@@ -9,7 +9,7 @@ public record LoginSuccess(
         String status,
         String username,
         String accessToken,
-        String authProvider,
+        String identityProvider,
         Instant issuedAt
 ) {
 }

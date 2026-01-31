@@ -29,14 +29,14 @@ public class AuthController {
     }
 
     @PostMapping("/verify/otp")
-    ResponseEntity<RegisterResponse> verifyOtp(@RequestBody @Valid OtpVerifyRequest request){
+    ResponseEntity<RegisterResponse> verifyOtp(@RequestBody @Valid OtpVerifyRequest request) {
         var response = authService.verifyOtp(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/otp")
+    @PostMapping("/otp")
     @ResponseStatus(code = HttpStatus.OK)
-    void requestOtp(@RequestBody @Valid OtpRequest otpRequest){
+    void requestOtp(@RequestBody @Valid OtpRequest otpRequest) {
         authService.requestOtp(otpRequest);
     }
 

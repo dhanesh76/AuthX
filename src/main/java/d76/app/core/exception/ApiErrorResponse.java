@@ -1,6 +1,7 @@
 package d76.app.core.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,28 @@ public class ApiErrorResponse {
 
     private String authProvider;
     private String actionToken;
+
+    public static ApiErrorResponse constructErrorResponse(ErrorCode code, HttpServletRequest request) {
+        return ApiErrorResponse
+                .builder()
+                .timestamp(Instant.now())
+                .errorCode(code.getCode())
+                .statusCode(code.getStatus().value())
+                .message(code.defaultMessage())
+                .path(request.getRequestURI())
+                .build();
+    }
+
+    public static ApiErrorResponse constructErrorResponse(ErrorCode code, String message, HttpServletRequest request) {
+        return ApiErrorResponse
+                .builder()
+                .timestamp(Instant.now())
+                .errorCode(code.getCode())
+                .statusCode(code.getStatus().value())
+                .message(message)
+                .path(request.getRequestURI())
+                .build();
+    }
 
     @Data
     @AllArgsConstructor

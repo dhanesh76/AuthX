@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class RedisCacheService implements CacheService{
+public class RedisCacheService implements CacheService {
 
     RedisTemplate<String, Object> redisTemplate;
 
@@ -20,7 +20,7 @@ public class RedisCacheService implements CacheService{
 
     @Override
     public <T> Optional<T> get(String key, Class<T> type) {
-        var value =  redisTemplate.opsForValue().get(key);
+        var value = redisTemplate.opsForValue().get(key);
         return Optional.ofNullable(type.cast(value));
     }
 

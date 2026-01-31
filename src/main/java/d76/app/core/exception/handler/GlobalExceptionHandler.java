@@ -25,15 +25,7 @@ public final class GlobalExceptionHandler {
                                                              HttpServletRequest request) {
 
         ErrorCode errorCode = ex.getErrorCode();
-
-        ApiErrorResponse response = ApiErrorResponse
-                .builder()
-                .statusCode(errorCode.getStatus().value())
-                .errorCode(errorCode.getCode())
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .timestamp(Instant.now())
-                .build();
+        var response = ApiErrorResponse.constructErrorResponse(errorCode, ex.getMessage(), request);
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 

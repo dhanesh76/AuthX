@@ -22,6 +22,5 @@ public class MailService {
                 MailContentType.TEXT)
         );
     }
-
-    //html for future
+    //implement html mail sender for future requirements
 }

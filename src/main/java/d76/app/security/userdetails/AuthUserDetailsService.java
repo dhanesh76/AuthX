@@ -1,9 +1,8 @@
 package d76.app.security.userdetails;
 
-import d76.app.core.exception.BusinessException;
+import d76.app.security.principal.UserPrincipal;
 import d76.app.user.entity.Users;
-import d76.app.user.exception.UserErrorCode;
-import d76.app.user.repo.UsersRepository;
+import d76.app.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,13 +15,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthUserDetailsService implements UserDetailsService {
 
-    private final UsersRepository usersRepository;
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        Users user = usersRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, "No user exists with: " + usernameOrEmail));
-
-        return new UserPrincipal(user);
+        Users user = userService.loadUserByEmailOrUsername(usernameOrEmail);
+        return UserPrincipal.fromUserEntity(user);
     }
 }

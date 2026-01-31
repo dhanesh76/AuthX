@@ -2,7 +2,7 @@ package d76.app.auth.service;
 
 import d76.app.auth.dto.*;
 import d76.app.auth.exception.AuthErrorCode;
-import d76.app.auth.model.AuthProvider;
+import d76.app.auth.model.IdentityProvider;
 import d76.app.core.exception.BusinessException;
 import d76.app.core.service.CacheService;
 import d76.app.notification.email.service.MailService;
@@ -34,7 +34,7 @@ public class AuthService {
         mailService.sendTextMail(request.email(), otpPurpose.subject(), otpPurpose.body(otp));
     }
 
-    public RegisterResponse verifyOtp(OtpVerifyRequest request){
+    public RegisterResponse verifyOtp(OtpVerifyRequest request) {
         otpService.verifyOtp(getTempRegisterKey(request.email()), request.otp(), OtpPurpose.EMAIL_VERIFICATION);
 
         var tempUser = cacheService.get(getTempRegisterKey(request.email()), TempUser.class).orElseThrow(
@@ -42,7 +42,7 @@ public class AuthService {
         );
 
         var user = userService.createLocalUser(tempUser.email(), tempUser.username(), tempUser.password());
-        return new RegisterResponse(user.getEmail(), AuthProvider.EMAIL.name(), Instant.now());
+        return new RegisterResponse(user.getEmail(), IdentityProvider.EMAIL.name(), Instant.now());
     }
 
     public void forgotPassword(String email) {
@@ -61,15 +61,15 @@ public class AuthService {
         userService.updatePassword(request.email(), request.newPassword());
     }
 
-    public String getTempRegisterKey(String email){
+    public String getTempRegisterKey(String email) {
         String TEMP_REGISTER_PREFIX = "register:temp:email:";
-        return TEMP_REGISTER_PREFIX +email;
+        return TEMP_REGISTER_PREFIX + email;
     }
 
     public void requestOtp(OtpRequest otpRequest) {
 
         //inappropriate action
-        if (OtpPurpose.EMAIL_VERIFICATION.equals(otpRequest.purpose())){
+        if (OtpPurpose.EMAIL_VERIFICATION.equals(otpRequest.purpose())) {
             userService.assertEmailAvailable(otpRequest.email());
         }
         otpService.issueOtp(otpRequest.email(), otpRequest.purpose());

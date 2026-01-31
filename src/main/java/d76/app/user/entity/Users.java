@@ -1,6 +1,6 @@
 package d76.app.user.entity;
 
-import d76.app.auth.model.AuthProvider;
+import d76.app.auth.model.IdentityProvider;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -55,7 +55,7 @@ public class Users {
     )
     @Column(name = "auth_provider")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Set<AuthProvider> authProviders;
+    private Set<IdentityProvider> identityProviders;
 
     @CreationTimestamp
     private Instant createdAt;

@@ -3,6 +3,7 @@ package d76.app.security.jwt;
 import d76.app.auth.exception.AuthErrorCode;
 import d76.app.core.exception.BusinessException;
 import d76.app.security.jwt.model.JwtPurpose;
+import d76.app.security.principal.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -10,12 +11,12 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -46,44 +47,25 @@ public class JwtService {
     /**
      * ACCESS TOKEN
      */
-    public String generateAccessToken(UserDetails principal) {
+    public String generateAccessToken(UserPrincipal principal) {
 
         String jti = UUID.randomUUID().toString();
 
-        String role = principal.getAuthorities()
+        List<String> role = principal.getAuthorities()
                 .stream()
-                .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .orElse("");
+                .toList();
 
         return Jwts.builder()
                 .id(jti)
-                .subject(principal.getUsername())
+                .subject(String.valueOf(principal.getUserId()))
+                .claim("email", principal.getUsername())
+                .claim("identityProvider", principal.getIdentityProvider().name())
+                .claim("roles", role)
                 .issuedAt(new Date())
                 .expiration(Date.from(Instant.now().plusSeconds(accessTokenTTLSeconds)))
-                .claim("role", role)
                 .signWith(getKey(), Jwts.SIG.HS256)
                 .compact();
-    }
-
-    public void assertAccessTokenValid(UserDetails principal, String token) {
-
-        Claims claims = extractClaims(token);
-
-        boolean subjectMatches = claims.getSubject().equals(principal.getUsername());
-        boolean notExpired = new Date().before(claims.getExpiration());
-
-        if (!subjectMatches || !notExpired) {
-
-            String reason = !subjectMatches ? "subject_mismatch" : "expired";
-
-            log.warn("Access token rejected for user={} reason={}",
-                    principal.getUsername(),
-                    reason
-            );
-
-            throw new BusinessException(AuthErrorCode.INVALID_TOKEN);
-        }
     }
 
     /**
@@ -98,7 +80,7 @@ public class JwtService {
                 .id(jti)
                 .subject(email)
                 .claim("purpose", purpose.name())
-                .claim("authProvider", authProvider)
+                .claim("identityProvider", authProvider)
                 .issuedAt(new Date())
                 .expiration(Date.from(Instant.now().plusSeconds(actionTokenTTLSeconds))) // 5 mins
                 .signWith(getKey(), Jwts.SIG.HS256)
@@ -174,17 +156,11 @@ public class JwtService {
                     .getPayload();
 
         } catch (JwtException ex) {
-
             log.warn("JWT parsing/verification failed: {}", ex.getMessage(), ex);
-
             throw new BusinessException(
                     AuthErrorCode.INVALID_TOKEN,
                     "Invalid or tampered token"
             );
         }
-    }
-
-    public String extractUserName(String token) {
-        return extractClaims(token).getSubject();
     }
 }

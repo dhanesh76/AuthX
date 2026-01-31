@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.Collections;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 public class AppConfig {
@@ -19,7 +17,7 @@ public class AppConfig {
     }
 
     @Bean
-    WebClient webClient() {
-        return WebClient.builder().build();
+    RestClient restClient() {
+        return RestClient.create();
     }
 }

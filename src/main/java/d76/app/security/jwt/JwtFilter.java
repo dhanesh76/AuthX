@@ -1,8 +1,10 @@
 package d76.app.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import d76.app.auth.model.IdentityProvider;
 import d76.app.core.exception.ApiErrorResponse;
 import d76.app.core.exception.BusinessException;
+import d76.app.security.principal.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,14 +13,15 @@ import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 @NullMarked
@@ -26,7 +29,6 @@ import java.time.Instant;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -37,36 +39,49 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         try {
             String header = request.getHeader("Authorization");
-            if (header != null &&
-                    header.startsWith("Bearer ") &&
+
+            if (header != null && header.startsWith("Bearer ") &&
                     SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 String token = header.substring("Bearer ".length()).trim();
-                String username = jwtService.extractUserName(token);
 
-                if (username != null && !username.isBlank()) {
-                    var userDetails = userDetailsService.loadUserByUsername(username);
+                var claims = jwtService.extractClaims(token);
 
-                    jwtService.assertAccessTokenValid(userDetails, token);
+                var userId = Long.parseLong(claims.getSubject());
+                var email = claims.get("email", String.class);
+                var identityProvider = IdentityProvider.valueOf(
+                        claims.get("identityProvider", String.class)
+                );
 
-                    var authToken = UsernamePasswordAuthenticationToken.authenticated(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
+                var rolesClaim = claims.get("roles");
+                List<String> roles = rolesClaim instanceof List<?> rawList ?
+                        rawList.stream()
+                                .filter(String.class::isInstance)
+                                .map(String.class::cast)
+                                .toList()
+                        : List.of();
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource()
-                                    .buildDetails(request)
-                    );
+                var authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
 
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authToken);
+                var userPrincipal = UserPrincipal.fromJwt(userId, email, identityProvider, authorities);
+                var authToken = UsernamePasswordAuthenticationToken.authenticated(
+                        userPrincipal,
+                        null,
+                        userPrincipal.getAuthorities()
+                );
 
-                }
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authToken);
+
             }
-
             filterChain.doFilter(request, response);
         } catch (BusinessException e) {
             var errorCode = e.getErrorCode();
