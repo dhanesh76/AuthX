@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Verify OTP</title><style>/* same styles */</style></head>
+<body>
+<div class="card">
+    <h2>Email verification</h2>
+    <form id="otpForm">
+        <label>Email</label><input id="email">
+        <label>OTP</label><input id="otp">
+        <button>Verify</button>
+    </form>
+    <p id="msg"></p>
+</div>
+
+<script>
+    otpForm.onsubmit=async e=>{
+        e.preventDefault();
+        const res=await fetch("/api/auth/verify/otp",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.value,otp:otp.value})});
+        msg.innerText=res.ok?"Account created!":"Failed";
+    };
+</script>
+</body>
+</html>

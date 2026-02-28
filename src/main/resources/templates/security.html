@@ -1,0 +1,16 @@
+<div class="container">
+    <div class="card">
+        <h2>Security Settings</h2>
+        <button onclick="link('GOOGLE')">Link Google</button>
+        <button onclick="link('GITHUB')">Link GitHub</button>
+    </div>
+</div>
+
+<script>
+    if(!sessionStorage.getItem("jwt")) location="/login";
+    async function link(p){
+        const token=prompt("Paste action token");
+        await fetch("/api/users/auth-providers",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+sessionStorage.getItem("jwt")},body:JSON.stringify({actionToken:token})});
+        alert("Linked!");
+    }
+</script>

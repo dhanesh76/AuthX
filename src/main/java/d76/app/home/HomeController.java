@@ -13,10 +13,10 @@ import java.util.Base64;
 @EnableMethodSecurity
 public class HomeController {
 
-    @GetMapping("/")
-    String home() {
-        return System.getProperty("os.name");
-    }
+//    @GetMapping("/")
+//    String home() {
+//        return System.getProperty("os.name");
+//    }
 
     @GetMapping("/user/secured")
     @PreAuthorize("hasRole('USER')")

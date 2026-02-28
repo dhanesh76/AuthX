@@ -29,7 +29,6 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         var errorCode = AuthErrorCode.ACCESS_DENIED;
-
         var errorResponse = ApiErrorResponse.constructErrorResponse(errorCode, request);
 
         response.setStatus(errorResponse.getStatusCode());

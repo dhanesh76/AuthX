@@ -16,8 +16,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -32,7 +30,7 @@ public class SecurityConfig {
     private final LogoutSuccessHandler logoutSuccessHandler;
     private final LoginSuccessHandler authenticationSuccessHandler;
     private final LoginFailureHandler authenticationFailureHandler;
-    private final CustomOidcUserService oAuth2UserService;
+    private final CustomOidcUserService oidcUserService;
     private final JwtFilter jwtFilter;
 
     @Bean
@@ -41,7 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.NEVER)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .formLogin(f -> f
                         .loginProcessingUrl("/api/auth/login")
@@ -55,7 +53,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(info -> info
-                                .oidcUserService(oAuth2UserService)
+                                .oidcUserService(oidcUserService)
                         )
                         .successHandler(authenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler)
@@ -72,6 +70,19 @@ public class SecurityConfig {
                                 "/error"
                         ).permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/register",
+                                "/verify-otp",
+                                "/forgot-password",
+                                "/reset-password",
+                                "/dashboard",
+                                "/security",
+                                "/css/**",
+                                "/js/**"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -80,10 +91,5 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return security.build();
-    }
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
