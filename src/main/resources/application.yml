@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+application:
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      access-ttl: ${JWT_ACCESS_TTL:300s}
+      flow-ttl: ${JWT_FLOW_TTL:300s}
+      re-auth-ttl: ${JWT_REAUTH_TTL:300s}
+
+  otp:
+    ttl: ${OTP_TTL:300s}
+
+  human-verification:
+    secret-key: ${TURNSTILE_SECRET_KEY}
+    expected-host: ${TURNSTILE_EXPECTED_HOST}
+    verify-url: ${TURNSTILE_VERIFY_URL:https://challenges.cloudflare.com/turnstile/v0/siteverify}

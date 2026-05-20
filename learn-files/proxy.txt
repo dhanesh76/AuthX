@@ -1,0 +1,169 @@
+proxy
+ 
+an intermediary server that sits between the client and
+a destination server
+
+forward proxy: hides the client from the server
+reverse proxy: hides the server from the client
+
+forward proxy:
+	- protects the clients online identity
+	- block access to the certain content
+	- help bypass the firewall/browsing restrictions
+	- cache the static content, helps to save the
+	bandwidth
+ 
+reverse proxy:
+	- protects a website by not
+	- exposing the server ip
+	- load balancing
+	- caching the static content, reduce the
+	load on the destination server
+
+NOTE: Reverse proxy tools like nginx/AWS ALB offers the server side load balancing
+
+
+REVERSE PROXY V LOAD BALANCER
+
+First, LB is not the only feature of the reverse proxy it is one of the many features reverse proxy offers
+
+Load Balancing happens in 2 sides
+
+1.Server side load balancing: nginx, AWS ALB
+2.Client side load balancing: Spring Cloud balancer in tandem with the Netflix eureka registry
+
+reverse proxy: primarily used to hide the server from the client, it sits at the edge of the network and it act as the single point of exposure of the application to the external world
+
+
+say we have developed a spring boot micro service application where API GATEWAY presents and other services like user, order to present with multiple instances
+
+say we make a request as GET domain.com/users/1
+
+role of load balancer:
+
+The request has to go through the API GATEWAY
+API Gateway has to forward it to user service but it
+runs in multiple instances it is role is not to choose the
+one out of that either
+
+here LB comes in the SpringCloudLoadBalancer fetches the
+instances of the user service from the eureka registry
+and caches it and chooses the one out of it based on algorithms like RR
+
+and hands it to the API gateway and API gateway forwards to that instance of service
+similarly if the user service has to reach out the order service or any other micros service the same happens
+here the APIGATEWAY, user, order and all are the clients by themselves when they make request to another services
+
+All of this stays in a private n/w
+
+
+Role of reverse proxy nginx/ALB
+
+we decided to take it online hence we purchase the AWS VPS
+
+there we get the range of ip and we subnet them to be a private and public say
+
+our reverse proxy will be running on a public facing ip and also gets a private IP
+
+we purchase a domain say domain.com we make it point
+to the public facing IP of the REVERSE PROXY say nginx
+
+it receives the request, terminate the client made TCP connection and then makes the new request with its private ip has sneder
+and preserves client ip in FORWARDEF-FOR header
+[ Client ] ═══════ Pipe A (TCP) ═══════► [ Nginx / ALB ] ═══════ Pipe B (TCP) ═══════► [ Backend ]
+   IP: 4.4.4.4                            Public IP: 8.8.8.8                              Private IP: 10.0.1.5
+                                          Private IP: 10.0.1.2
+
+
+here with this way the application itself is never visible to the external world as it in a private n/w
+
+reverse proxy plays dual role, with the double IP
+handles the SSL, ratelimiting can even be done here and many more
+
+
+
+
+say if we are looking to scale our application as many users API GATEWAY ITSELF become a bottle neck with single instance so we scale that to horizontally with multiple instance now the reverse proxy does load balancing here to the API GATE WAY which is different from the client side lb done by spring cloud lb
+
+
+Client IP: 49.x.x.x
+
+↓ reaches ALB
+
+ALB forwards request to Gateway with headers:
+
+X-Forwarded-For: 49.x.x.x
+
+
+
+map it to the home wifi:
+where the wifi gets the public facing ip and the device connected to it gets the private ip's
+
+hence u can't reach the devices or process running
+with the private ip
+
+only router can reach the devices not the external world
+
+here nginx can be seen as home wifi
+and the spring application as that multiple devices
+
+
+                    INTERNET
+                        |
+                 Route53 DNS
+                        |
+                  AWS ALB (Public)
+           [Reverse Proxy + SSL + LB]
+                        |
+         --------------------------------
+         |              |              |
+    API-GW-1       API-GW-2       API-GW-3
+                        |
+                  Eureka Registry
+                        |
+        -----------------------------------
+        |                |               |
+   User-Service     Order-Service    Auth-Service
+    (multiple)       (multiple)      (multiple)
+                        |
+                    Databases
+
+__________________________________________________________
+
+Note: AWS ALB AND the nginx are used in tandem largely as industry practice
+where the ALB do the SSL and stuff and nginx lives in private n/w and don some sort of
+inteliigent work w.r.t to the request
+
+explore later
+
+
+
+[ THE PUBLIC INTERNET ]
+                              │
+                    Hits http://mydomain.com
+                              ▼
+┌───────────────────────────────────────────────────────┐
+│ AWS INFRASTRUCTURE (The Public Edge)                    					│
+│                                                         					│
+│   [ AWS ALB ] (Manages dynamic public IPs & AWS Security)				│
+└─────────────────────────────┬──────────────────────────┘
+                              │
+                 Passes HTTP down to Private Subnet
+                              ▼
+┌───────────────────────────────────────────────────────┐
+│ YOUR PRIVATE VPC SUBNET (The Core App Network)          					│
+│                                                         					│
+│   ┌───────────────┐     ┌───────────────┐               		│
+│   │ [Nginx Pod/VM]│     │ [Nginx Pod/VM]│ ◄─── Managed  				│
+│   └───────┬───────┘     └───────┬───────┘      by ALB   		│
+│           │                     │                       					│
+│           └──────────┬──────────┘                       			│
+│                      ▼                                  					│
+│         [ Spring Boot API Gateway ]                     					│
+│                      │                                  					│
+│                      ▼                                  					│
+│         [ Microservices / Databases ]                   					│
+└───────────────────────────────────────────────────────┘
+
+
+-------------------------------------------------------------------------------------------------
